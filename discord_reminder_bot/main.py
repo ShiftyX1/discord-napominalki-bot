@@ -79,7 +79,7 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
     """
     if not ctx.message:
         return await ctx.send(
-            "The message that triggered this modal is missing. Or something else went wrong.",
+            "Сообщение которое триггернуло этот модаль. Или произошло нечто другое...",
             ephemeral=True,
         )
 
@@ -91,15 +91,15 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
         job: Job | None = scheduler.get_job(job_id)
     except JobLookupError as e:
         return await ctx.send(
-            f"Failed to get the job after the modal.\nJob ID: {job_id}\nError: {e}",
+            f"Неудалось получить задачу после модаля.\nJob ID: {job_id}\nОшибка: {e}",
             ephemeral=True,
         )
 
     if job is None:
-        return await ctx.send("Job not found.", ephemeral=True)
+        return await ctx.send("Задача не найдена.", ephemeral=True)
 
     if not response:
-        return await ctx.send("No changes made.", ephemeral=True)
+        return await ctx.send("Не найдено изменений.", ephemeral=True)
 
     if type(job.trigger) is DateTrigger:
         new_message: str | None = response[0]
@@ -111,7 +111,7 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
     message_embeds: list[Embed] = ctx.message.embeds
     for embeds in message_embeds:
         if embeds.fields is None:
-            return await ctx.send("No fields found in the embed.", ephemeral=True)
+            return await ctx.send("Не найдено полей в embed'е.", ephemeral=True)
 
         for field in embeds.fields:
             if field.name == "**Channel:**":
@@ -122,11 +122,11 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
                 old_date = field.value
             else:
                 return await ctx.send(
-                    f"Unknown field name ({field.name}).",
+                    f"Неизвестное имя поля ({field.name}).",
                     ephemeral=True,
                 )
 
-    msg: str = f"Modified job {job_id}.\n"
+    msg: str = f"Измененная задача {job_id}.\n"
     if old_date is not None and new_date:
         # Parse the time/date we got from the command.
         parsed: ParsedTime = parse_time(date_to_parse=new_date)
@@ -135,7 +135,7 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
         parsed_date: datetime | None = parsed.parsed_time
 
         if parsed_date is None:
-            return await ctx.send(f"Failed to parse the date. ({new_date})")
+            return await ctx.send(f"Неудалось спарсить дату. ({new_date})")
 
         date_new: str = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -145,7 +145,7 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
         # TODO: old_date and date_new has different precision.
         # Old date: 2032-09-18 00:07
         # New date: 2032-09-18 00:07:13
-        msg += f"**Old date**: {old_date}\n**New date**: {date_new} (in {new_time})\n"
+        msg += f"**Предыдущая дата**: {old_date}\n**Новая дата**: {date_new} (в {new_time})\n"
 
     if old_message is not None:
         channel_id: int = job.kwargs.get("channel_id")
@@ -161,25 +161,25 @@ async def modal_response_edit(ctx: CommandContext, *response: str) -> Message:  
             )
         except JobLookupError as e:
             return await ctx.send(
-                f"Failed to modify the job.\nJob ID: {job_id}\nError: {e}",
+                f"Не удалось изменить задачу.\nJob ID: {job_id}\nError: {e}",
                 ephemeral=True,
             )
-        msg += f"**Old message**: {old_message}\n**New message**: {new_message}\n"
+        msg += f"**Старое сообщение**: {old_message}\n**Новое сообщение**: {new_message}\n"
 
     return await ctx.send(msg)
 
 
 @autodefer()
-@bot.command(name="parse", description="Parse the time from a string")  # type: ignore  # noqa: PGH003
+@bot.command(name="parse", description="Спарсить время из строки")  # type: ignore  # noqa: PGH003
 @interactions.option(
     name="time_to_parse",
-    description="The string you want to parse.",
+    description="Строка которую хочешь распарсить.",
     type=OptionType.STRING,
     required=True,
 )
 @interactions.option(
     name="optional_timezone",
-    description="Optional time zone, for example Europe/Stockholm",
+    description="Опционально: часовой пояс, например Europe/Moscow",
     type=OptionType.STRING,
     required=False,
 )
@@ -204,23 +204,23 @@ async def parse_command(
     parsed_date: datetime | None = parsed.parsed_time
 
     if parsed_date is None:
-        return await ctx.send(f"Failed to parse the date. ({time_to_parse})")
+        return await ctx.send(f"Не удалось распарсить дату. ({time_to_parse})")
 
     # Locale`s appropriate date and time representation.
     locale_time: str = parsed_date.strftime("%c")
     run_date: str = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
     return await ctx.send(
-        f"**String**: {time_to_parse}\n"
-        f"**Parsed date**: {parsed_date}\n"
-        f"**Formatted**: {run_date}\n"
-        f"**Locale time**: {locale_time}\n",
+        f"**Строка**: {time_to_parse}\n"
+        f"**Спаршенная дата**: {parsed_date}\n"
+        f"**Форматированная**: {run_date}\n"
+        f"**Время**: {locale_time}\n",
     )
 
 
 @autodefer()
 @base_command.subcommand(
     name="list",
-    description="List, pause, unpause, and remove reminders.",
+    description="Показать, заморозить, разморозить, и удалить напоминалки.",
 )
 async def list_command(ctx: interactions.CommandContext) -> Message | None:
     """List, pause, unpause, and remove reminders.
@@ -230,13 +230,13 @@ async def list_command(ctx: interactions.CommandContext) -> Message | None:
     """
     pages: list[Page] = await create_pages(ctx)
     if not pages:
-        return await ctx.send("No reminders found.", ephemeral=True)
+        return await ctx.send("Не нашел напоминалок.", ephemeral=True)
 
     if len(pages) == 1:
         for page in pages:
             return await ctx.send(
-                content="I haven't added support for buttons if there is only one reminder, "
-                "so you need to add another one to edit/delete this one 🙃",
+                content="Я не сделал поддержку кнопок если присутствует только одна напоминалка, "
+                "поэтому добавь еще одну или измени/удали эту 🙃",
                 embeds=page.embeds,
             )
 
@@ -255,34 +255,34 @@ async def list_command(ctx: interactions.CommandContext) -> Message | None:
 
 
 @autodefer()
-@base_command.subcommand(name="add", description="Set a reminder.")
+@base_command.subcommand(name="add", description="Поставить напоминалку.")
 @interactions.option(
     name="message_reason",
-    description="The message I'm going to send you.",
+    description="Сообщение которое я отправлю тебе.",
     type=OptionType.STRING,
     required=True,
 )
 @interactions.option(
     name="message_date",
-    description="The date to send the message.",
+    description="Дата в которую отправить сообщение.",
     type=OptionType.STRING,
     required=True,
 )
 @interactions.option(
     name="different_channel",
-    description="The channel to send the message to.",
+    description="Канал в который нужно отправить сообщение.",
     type=OptionType.CHANNEL,
     required=False,
 )
 @interactions.option(
     name="send_dm_to_user",
-    description="Send message to a user via DM instead of a channel. Set both_dm_and_channel to send both.",
+    description="Отправить сообщение пользаку в личку вместо канала. Укажи both_dm_and_channel чтобы отправить и туда и туда.",
     type=OptionType.USER,
     required=False,
 )
 @interactions.option(
     name="both_dm_and_channel",
-    description="Send both DM and message to the channel, needs send_dm_to_user to be set if you want both.",
+    description="Отправка и личного сообщения и сообщения в канал, необходимо указать send_dm_to_user если хочешь отправить и туда и туда.",
     type=OptionType.BOOLEAN,
     required=False,
 )
@@ -311,7 +311,7 @@ async def command_add(  # noqa: PLR0913
     parsed_date: datetime | None = parsed.parsed_time
 
     if parsed_date is None:
-        return await ctx.send(f"Failed to parse the date. ({message_date})")
+        return await ctx.send(f"Не удалось распарсить дату. ({message_date})")
 
     run_date: str = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -321,7 +321,7 @@ async def command_add(  # noqa: PLR0913
         channel_id = int(different_channel.id)
 
     dm_message: str = ""
-    where_and_when = "You should never see this message. Please report this to the bot owner if you do. :-)"
+    where_and_when = "Ты бля ваще не должен видеть это сообщение, это баг. Если увидел, то Лучше звони Shifty. :-)"
     should_send_channel_reminder = True
     try:
         if send_dm_to_user:
@@ -339,11 +339,11 @@ async def command_add(  # noqa: PLR0913
                 # If we should send the message to the channel too instead of just a DM.
                 should_send_channel_reminder = False
                 where_and_when: str = (
-                    f"I will send a DM to {send_dm_to_user.username} at:\n"
-                    f"**{run_date}** (in {calculate(dm_reminder)})\n"
+                    f"Я отправлю сообщение в личку {send_dm_to_user.username}:\n"
+                    f"**{run_date}** (в {calculate(dm_reminder)})\n"
                 )
         if ctx.member is None:
-            return await ctx.send("Something went wrong when grabbing the member, are you in a guild?", ephemeral=True)
+            return await ctx.send("Что-то пошло не так при получении участника, проверь 'guild' в дискорде.", ephemeral=True)
 
         if should_send_channel_reminder:
             reminder: Job = scheduler.add_job(
@@ -356,14 +356,14 @@ async def command_add(  # noqa: PLR0913
                 },
             )
             where_and_when = (
-                f"I will notify you in <#{channel_id}> {dm_message}at:\n**{run_date}** (in {calculate(reminder)})\n"
+                f"Я напомню тебе в <#{channel_id}> {dm_message}:\n**{run_date}** (в {calculate(reminder)})\n"
             )
 
     except ValueError as e:
         await ctx.send(str(e), ephemeral=True)
         return None
 
-    message: str = f"Hello {ctx.member.name}, {where_and_when}With the message:\n**{message_reason}**."
+    message: str = f"Привет {ctx.member.name}, {where_and_when}С сообщением:\n**{message_reason}**."
     await ctx.send(message)
     return None
 
@@ -393,97 +393,97 @@ async def send_to_user(user_id: int, guild_id: int, message: str) -> None:
 )
 @interactions.option(
     name="message_reason",
-    description="The message I'm going to send you.",
+    description="Сообщение которое я тебе отправлю.",
     type=OptionType.STRING,
     required=True,
 )
 @interactions.option(
     name="year",
-    description="4-digit year. (Example: 2042)",
+    description="4-значное указание года. (Пример: 2042)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="month",
-    description="Month. (1-12)",
+    description="Месяц. (от 1 до 12)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="day",
-    description="Day of month (1-31)",
+    description="Число месяца (от 1 до 31)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="week",
-    description="ISO week (1-53)",
+    description="ISO неделя (от 1 до 53)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="day_of_week",
-    description="Number or name of weekday (0-6 or mon,tue,wed,thu,fri,sat,sun).",
+    description="Номер или название дня недели (от 0 до 6 или mon,tue,wed,thu,fri,sat,sun).",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="hour",
-    description="Hour (0-23)",
+    description="Час (от 0 до 23)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="minute",
-    description="Minute (0-59)",
+    description="Минуты (от 0 до 59)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="second",
-    description="Second (0-59)",
+    description="Секунды (от 0 до 59)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="start_date",
-    description="Earliest possible time to trigger on, in the ISO 8601 format. (Example: 2010-10-10 09:30:00)",
+    description="Самое раннее возможное время чтобы начать напоминалку, в формате ISO 8601. (Пример: 2010-10-10 09:30:00)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="end_date",
-    description="Latest possible time to trigger on, in the ISO 8601 format. (Example: 2010-10-10 09:30:00)",
+    description="Самое последнее время когда включить напоминалку, в формате ISO 8601. (Пример: 2010-10-10 09:30:00)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="timezone",
-    description="Time zone to use for the date/time calculations (defaults to scheduler timezone)",
+    description="Часовой пояс который нужно использовать для вычислений даты/времени (по умолчанию scheduler_timezone)",
     type=OptionType.STRING,
     required=False,
 )
 @interactions.option(
     name="jitter",
-    description="Delay the job execution by x seconds at most. Adds a random component to the execution time.",
+    description="Задержка до выполнения задачи на x секунд в качестве наиболее высокой задержки. Добавляет компонент рандома в выполнение задачи.",
     type=OptionType.INTEGER,
     required=False,
 )
 @interactions.option(
     name="different_channel",
-    description="Send the messages to a different channel.",
+    description="Отправить сообщение в другой канал.",
     type=OptionType.CHANNEL,
     required=False,
 )
 @interactions.option(
     name="send_dm_to_user",
-    description="Send message to a user via DM instead of a channel. Set both_dm_and_channel to send both.",
+    description="Отправить сообщение пользователю в личку вместо канала. Устанавливай both_dm_and_channel чтобы отправить и туда и туда.",
     type=OptionType.USER,
     required=False,
 )
 @interactions.option(
     name="both_dm_and_channel",
-    description="Send both DM and message to the channel, needs send_dm_to_user to be set if you want both.",
+    description="Отправляет и в личку и в канал, нужно установить send_dm_to_user если хочешь отправить и туда и туда.",
     type=OptionType.BOOLEAN,
     required=False,
 )
@@ -536,7 +536,7 @@ async def remind_cron(  # noqa: PLR0913
         channel_id = int(different_channel.id)
 
     dm_message: str = ""
-    where_and_when = "You should never see this message. Please report this to the bot owner if you do. :-)"
+    where_and_when = "Ты бля ваще не должен видеть это сообщение, это баг. Если увидел, то Лучше звони Shifty. :-)"
     should_send_channel_reminder = True
     try:
         if send_dm_to_user:
@@ -570,7 +570,7 @@ async def remind_cron(  # noqa: PLR0913
                     f"First run in {calculate(dm_reminder)} with the message:\n"
                 )
         if ctx.member is None:
-            await ctx.send("Failed to get member from context. Are you sure you're in a server?", ephemeral=True)
+            await ctx.send("Ошибка при получении участника из контекста сообщения. Ты уверен что ты на сервере?", ephemeral=True)
             return
         if should_send_channel_reminder:
             job: Job = scheduler.add_job(
@@ -595,8 +595,8 @@ async def remind_cron(  # noqa: PLR0913
                 },
             )
             where_and_when = (
-                f" I will send messages to <#{channel_id}>{dm_message}.\n"
-                f"First run in {calculate(job)} with the message:\n"
+                f" Я отправлю сообщения в <#{channel_id}>{dm_message}.\n"
+                f"Первый запуск {calculate(job)} с сообщением:\n"
             )
 
     except ValueError as e:
@@ -604,7 +604,7 @@ async def remind_cron(  # noqa: PLR0913
         return
 
     # TODO: Add what arguments we used in the job to the message
-    message: str = f"Hello {ctx.member.name}, {where_and_when} **{message_reason}**."
+    message: str = f"Привет {ctx.member.name}, {where_and_when} **{message_reason}**."
     await ctx.send(message)
 
 
@@ -730,7 +730,7 @@ async def remind_interval(  # noqa: PLR0913
         channel_id = int(different_channel.id)
 
     dm_message: str = ""
-    where_and_when = "You should never see this message. Please report this to the bot owner if you do. :-)"
+    where_and_when = "Ты бля ваще не должен видеть это сообщение, это баг. Если увидел, то Лучше звони Shifty. :-)"
     should_send_channel_reminder = True
     try:
         if send_dm_to_user:
@@ -757,11 +757,11 @@ async def remind_interval(  # noqa: PLR0913
                 # If we should send the message to the channel too instead of just a DM.
                 should_send_channel_reminder = False
                 where_and_when: str = (
-                    f"I will send a DM to {send_dm_to_user.username} at:\n"
-                    f"First run in {calculate(dm_reminder)} with the message:\n"
+                    f"Я отправлю сообщение в личку {send_dm_to_user.username}:\n"
+                    f"Начну в {calculate(dm_reminder)} с сообщением:\n"
                 )
         if ctx.member is None:
-            await ctx.send("Failed to get the member who sent the command.", ephemeral=True)
+            await ctx.send("Не удалось получить участника который отправил команду.", ephemeral=True)
             return
 
         if should_send_channel_reminder:
@@ -784,8 +784,8 @@ async def remind_interval(  # noqa: PLR0913
                 },
             )
             where_and_when = (
-                f" I will send messages to <#{channel_id}>{dm_message}.\n"
-                f"First run in {calculate(job)} with the message:"
+                f" Я буду отправлять сообщения в <#{channel_id}>{dm_message}.\n"
+                f"Первая отправка {calculate(job)} с сообщением:"
             )
 
     except ValueError as e:
@@ -793,7 +793,7 @@ async def remind_interval(  # noqa: PLR0913
         return
 
     # TODO: Add what arguments we used in the job to the message
-    message: str = f"Hello {ctx.member.name}\n{where_and_when}\n**{message_reason}**."
+    message: str = f"Привет {ctx.member.name}\n{where_and_when}\n**{message_reason}**."
 
     await ctx.send(message)
 
